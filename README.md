@@ -102,7 +102,7 @@ A great free tool for testing APIs is Postman.
 Please download the application for the following tests.
 To get the url for testing go to google sheet > Extensions > Apps Script > Deploy > Manage Deployments <br>
 The URL should look like this: 
-https://script.google.com/macros/s/< Deployment ID here>/exec <br>
+`https://script.google.com/macros/s/< Deployment ID here>/exec` <br>
 First let's do the POST request: Create a new collection in Postman then add a request (select POST). Don't forget to add the body:
 ``` json
 {"colour": 6}
