@@ -169,7 +169,7 @@ IP.1 = 192.168.4.22
 10. Your public certificate is now in `cube.crt` and your private key is in `cube.key`.
 
 ### Step 4: The ESP8266 Code in the Arduino IDE. 
-Please read the comments in the code to understand where changes are required and how the code works for the ESP8266. You can update the certificate and private key used to set up a TLS connection with the values from [step 3](#step-3:-setting-up-the-tls-connection).
+Please read the comments in the code to understand where changes are required and how the code works for the ESP8266. You can update the certificate and private key used to set up a TLS connection with the values from step 3.
 In summary, the ESP8266 connects to WiFi, then checks every 5 minutes if a change has been made to the colour number in the google sheet by using a get request. If the button or switch goes on and off, the colour increments by 1, and a POST request is sent to update the google sheet. 
 When the button or switch is pressed (LOW), the light flashes green to indicate that the press has been detected. The user can then put the switch back in the normal position or stop pressing the button. A colour change should occur. 
 **_NOTE:_** Colour 10 is a power-saving mode where the get request time is increased to 10 minutes and the light is off. 
