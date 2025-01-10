@@ -180,8 +180,8 @@ Compile the code (make sure to go to Tools > Board > Select the Generic ESP8266 
 <br>  
 
 ### Step 5: Connecting to WiFi 
-After code is uploaded:
-1. Go to the list of WiFi networks on your device and connect to the Companion Cube access point (the password is `apple_pine_windOw2`). This access point will only stay open a maximum of 10 minutes.
+After the code is uploaded:
+1. Go to the list of WiFi networks on your device and connect to the Companion Cube access point (the password is `apple_pine_windOw2`). This access point will stay open a maximum of 10 minutes.
 2. Search for `https://companion-cube.local`.
 3. Enter the name of your WiFi network and its password on the screen that appears.
 ![plot](./static/screen.png)
