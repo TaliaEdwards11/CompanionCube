@@ -184,7 +184,7 @@ After code is uploaded:
 1. Go to the list of WiFi networks on your device and connect to the Companion Cube access point (the password is `apple_pine_windOw2`). This access point will only stay open a maximum of 10 minutes.
 2. Search for `https://companion-cube.local`.
 3. Enter the name of your WiFi network and its password on the screen that appears.
-![plot](./static/screen.jpg)
+![plot](./static/screen.png)
 <br>
 If you successfully connect to WiFi, the cube will turn green. It turns red if you fail to connect once. If you fail to connect 2 times, then the cube turns pink and you need to unplug and plug it in again to retry. 
 
