@@ -5,6 +5,9 @@ This tutorial will allow you to create two colour changing lamps that can commun
 <br>
 
 ![plot](./static/intro.jpg)
+
+<br>
+Video demo coming soon...
 ______________________________________________________________________________
 ## Materials
 ### Box (per box)
@@ -143,15 +146,15 @@ First a TLS handshake occurs between the client and the server. The client sends
 
 #### How to Generate the Public Certificate, Private Key, and Certificate Authority
 1. Go to the terminal
-2. CANAME=CompanionCubeCA
-2. openssl genrsa -aes256 -out $CANAME.key 2048
-3. openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 1826 -out $CANAME.crt
+2. `CANAME=CompanionCubeCA`
+2. `openssl genrsa -aes256 -out $CANAME.key 2048`
+3. `openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 1826 -out $CANAME.crt`
 4. Add the CA certificate to the trusted root certificates of your computer ([instructions for mac](https://support.apple.com/en-ca/guide/keychain-access/kyca2431/mac) and [instructions to trust the certificate](https://support.apple.com/en-ca/guide/keychain-access/kyca11871/mac))
-5. MYCERT=cube
-6. openssl req -new -nodes -out $MYCERT.csr -newkey rsa:2048 -keyout $MYCERT.key 
-7. Create the following file:
-```shell
-cat > congif.ext << EOF
+5. `MYCERT=cube`
+6. `openssl req -new -nodes -out $MYCERT.csr -newkey rsa:2048 -keyout $MYCERT.key`
+7. `vi config.ext`
+8. Enter the following information and save it after by pressing escape then :w and then escape and :q to leave.
+```
 authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:FALSE
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
@@ -159,10 +162,9 @@ subjectAltName = @alt_names
 [alt_names]
 DNS.1 = companion-cube.local
 IP.1 = 192.168.4.22
-EOF
 ```
-8. openssl x509 -req -in $MYCERT.csr -CA $CANAME.crt -CAkey $CANAME.key -CAcreateserial -out $MYCERT.crt -days 1826 -sha256 -extfile config.ext
-9. Your public certificate is now in `cube.crt` and your private key is in `cube.key`.
+9. `openssl x509 -req -in $MYCERT.csr -CA $CANAME.crt -CAkey $CANAME.key -CAcreateserial -out $MYCERT.crt -days 1826 -sha256 -extfile config.ext`
+10. Your public certificate is now in `cube.crt` and your private key is in `cube.key`.
 
 ### Step 4: The ESP8266 Code in the Arduino IDE. 
 Please read the comments in the code to understand where changes are required and how the code works for the ESP8266. You can update the certificate and private key used to set up a TLS connection with the values from (step 3)[#step-3:-setting-up-the-tls-connection].
