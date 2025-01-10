@@ -67,7 +67,7 @@ ______________________________________________________________________________
 
 In terms of software, the companion cube friendship lamp works by connecting to WiFi
 using the ESP8266, it then sends an API request to a google sheet.
-If it has not connected to WiFi successfully, it will ask the user for their ssid and password via a screen that will be accessible through an access point (will appear in your wifi network options as Companion Cube). After 10 minutes, if it had no input the access point closes. If the input is submitted and the WiFi connection is successful, the ssid and password will be saved in flash memory so it can easily connect next time.
+If it has not connected to WiFi successfully, it will ask the user for their ssid and password via a screen that will be accessible through an access point (will appear in your wifi network options as Companion Cube). After 10 minutes, if it had no input, the access point closes. If the input is submitted and the WiFi connection is successful, the ssid and password will be saved in flash memory so it can easily connect next time.
 The google sheet API must be created by using apps script (in extensions of google sheet). 
 The companion cube reads a number from a single cell on the google sheet table.
 It then changes to whichever colour is associated with that number.
