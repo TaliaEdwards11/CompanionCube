@@ -3,11 +3,13 @@
 ### Summary
 This tutorial will allow you to create two colour changing lamps that can communicate using WiFi. The lamps change colour when the switch is flipped to off and then back to on (you can use a button instead). The colour change is sent to a google sheet table that contains an integer value to represent the colour. Every 5 minutes the lamps read the colour integer and update their own colour to match the last colour entered in the table. This can be done through an API call to the Apps Script extension of google sheet. This will be explained in detail later. 
 <br>
+Video demo coming soon...
+<br>
 
 ![plot](./static/intro.jpg)
 
 <br>
-Video demo coming soon...
+
 ______________________________________________________________________________
 ## Materials
 ### Box (per box)
