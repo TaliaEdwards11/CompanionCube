@@ -67,7 +67,7 @@ ______________________________________________________________________________
 
 In terms of software, the companion cube friendship lamp works by connecting to WiFi
 using the ESP8266, it then sends an API request to a google sheet.
-If it has not connected to WiFi successfully, it will ask the user for their ssid and password via a screen that will be accessible through an access point (will appear in your wifi network options as Companion Cube). After 10 minutes, if it had no input, the access point closes. If the input is submitted and the WiFi connection is successful, the ssid and password will be saved in flash memory so it can easily connect next time.
+If it has not connected to WiFi successfully, it will ask the user for their ssid and password via a page that will be accessible through an access point (will appear in your wifi network options as Companion Cube). After 10 minutes, if it had no input, the access point closes. If the input is submitted and the WiFi connection is successful, the ssid and password will be saved in flash memory so it can easily connect next time.
 The google sheet API must be created by using apps script (in extensions of google sheet). 
 The companion cube reads a number from a single cell on the google sheet table.
 It then changes to whichever colour is associated with that number.
@@ -141,7 +141,7 @@ Instructions to install are found [here](https://docs.arduino.cc/software/ide-v1
 [Click here for more information on the HTTPSRedirect](https://github.com/electronicsguy/HTTPSRedirect)
 
 ### Step 3: Setting up the TLS connection 
-Initially, the client's WiFi ssid and password are shared through a screen hosted by a server (the esp8266) on its own local network (reachable via an access point). 
+Initially, the client's WiFi ssid and password are shared through a page hosted by a server (the esp8266) on its own local network (reachable via an access point). 
 In order to encrypt the data being sent from the client (your browser) to the server (the esp8266), a TLS connection is required. This code uses the RSA key exchange algorithm. A public certificate and private key are required.
 
 First a TLS handshake occurs between the client and the server. The client sends a "hello" containing the supported cipher suites (algorithms to keep data safe), the desired version of TLS to use, and a string of random bytes known as the client random. The server's reply will include its public SSL certificate, the chosen cipher suite, and the server random (random string of bytes). The client confirms the identity of the server by using the server’s public certificate and its SSL certificate authority’s digital signature. The client uses the public key to encrypt a random string of bytes known as the premaster secret. It sends the encrypted data to the server. The server decrypts the premaster secret using its private key. The client and server generate identical session keys to use symmetric encryption by using the client random, the server random, and the premaster secret.
@@ -183,14 +183,14 @@ Compile the code (make sure to go to Tools > Board > Select the Generic ESP8266 
 After the code is uploaded:
 1. Go to the list of WiFi networks on your device and connect to the Companion Cube access point (the password is `apple_pine_windOw2`). This access point will stay open a maximum of 10 minutes.
 2. Search for `https://companion-cube.local`.
-3. Enter the name of your WiFi network and its password on the screen that appears.
+3. Enter the name of your WiFi network and its password on the page that appears.
 ![plot](./static/screen.png)
 <br>
 If you successfully connect to WiFi, the cube will turn green. It turns red if you fail to connect once. If you fail to connect 2 times, then the cube turns pink and you need to unplug and plug it in again to retry. 
 
 #### How is the .local domain working? 
 The code is using something called MDNS to allow the domain name to be discoverable locally. 
-If this was not used, the screen could only be accessed using the server's ip address.
+If this was not used, the page could only be accessed using the server's ip address.
 When you are searching for a webpage on the internet, the browser sends the domain name to the router which can access the DNS servers. The DNS server returns the ip of the webpage you are trying to reach. You now know where the webpage is located.
 <br>
 Your local network does not have a DNS server, but you can use multicast DNS instead (uses .local suffix). If you are trying to access a domain name ending in .local, your computer will send a multicast query in the local area network. All devices on that network that support mDNS will receive the query. If the device identifies the domain name as its own, it will send another multicast query containing its IP address.
