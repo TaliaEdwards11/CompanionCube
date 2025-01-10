@@ -1,14 +1,19 @@
 # Building a Companion Cube
-## A colour changing friendship lamp 
+## Synchronized Colour Changing Long-Distance Lamps
 ### Summary
 This tutorial will allow you to create two colour changing lamps that can communicate using WiFi. The lamps change colour when the switch is flipped to off and then back to on (you can use a button instead). The colour change is sent to a google sheet table that contains an integer value to represent the colour. Every 5 minutes the lamps read the colour integer and update their own colour to match the last colour entered in the table. This can be done through an API call to the Apps Script extension of google sheet. This will be explained in detail later. 
 <br>
+Video demo coming soon...
+<br>
 
 ![plot](./static/intro.jpg)
+
+<br>
+
 ______________________________________________________________________________
 ## Materials
 ### Box (per box)
-- Saw for wood (used a mitre Saw and a fine tooth hand saw)
+- Saws for wood (used a mitre Saw and a fine tooth hand saw)
 - Hole saw with 2.75 inch bit 
 - Hole saw with 0.5 inch bit 
 - Large board of wood (0.25 inch thickness) cut into:
@@ -61,11 +66,13 @@ ______________________________________________________________________________
 ## Instructions for Software 
 
 In terms of software, the companion cube friendship lamp works by connecting to WiFi
-using the ESP8266, it then sends an API request to a google sheet. The google sheet API must be created by using apps script (in extensions of google sheet). 
+using the ESP8266, it then sends an API request to a google sheet.
+If it has not connected to WiFi successfully, it will ask the user for their ssid and password via a screen that will be accessible through an access point (will appear in your wifi network options as Companion Cube). After 10 minutes, if it had no input, the access point closes. If the input is submitted and the WiFi connection is successful, the ssid and password will be saved in flash memory so it can easily connect next time.
+The google sheet API must be created by using apps script (in extensions of google sheet). 
 The companion cube reads a number from a single cell on the google sheet table.
 It then changes to whichever colour is associated with that number.
 You can have as many numbers as you want depending on how many colours you want. 
-I chose to have the Arduino read from the google sheet every 5 min. 
+I chose to have the Arduino read from the google sheet every 5 min, but you can change that as well if desired. 
 The companion cube can also write to the single cell using the API. 
 The cube writes only when the button is clicked (or switch changed to on and then off again).
 
@@ -95,7 +102,7 @@ A great free tool for testing APIs is Postman.
 Please download the application for the following tests.
 To get the url for testing go to google sheet > Extensions > Apps Script > Deploy > Manage Deployments <br>
 The URL should look like this: 
-https://script.google.com/macros/s/< Deployment ID here>/exec <br>
+`https://script.google.com/macros/s/< Deployment ID here>/exec` <br>
 First let's do the POST request: Create a new collection in Postman then add a request (select POST). Don't forget to add the body:
 ``` json
 {"colour": 6}
@@ -123,29 +130,70 @@ You now have a working API.
 
 ``` ino
 #include <ESP8266WiFi.h>
-#include <Adafruit_NeoPixel.h>
+#include <ESP8266WebServerSecure.h>
+#include <ESP8266mDNS.h>
 #include <HTTPSRedirect.h>
+#include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 ```
 
 Instructions to install are found [here](https://docs.arduino.cc/software/ide-v1/tutorials/installing-libraries#). <br>
 [Click here for more information on the HTTPSRedirect](https://github.com/electronicsguy/HTTPSRedirect)
 
+### Step 3: Setting up the TLS connection 
+Initially, the client's WiFi ssid and password are shared through a screen hosted by a server (the esp8266) on its own local network (reachable via an access point). 
+In order to encrypt the data being sent from the client (your browser) to the server (the esp8266), a TLS connection is required. This code uses the RSA key exchange algorithm. A public certificate and private key are required.
 
-### Step 3: The ESP8266 Code in the Arduino IDE. 
-Please read the comments in the code to understand where changes are required and how the code works for the ESP8266. 
+First a TLS handshake occurs between the client and the server. The client sends a "hello" containing the supported cipher suites (algorithms to keep data safe), the desired version of TLS to use, and a string of random bytes known as the client random. The server's reply will include its public SSL certificate, the chosen cipher suite, and the server random (random string of bytes). The client confirms the identity of the server by using the server’s public certificate and its SSL certificate authority’s digital signature. The client uses the public key to encrypt a random string of bytes known as the premaster secret. It sends the encrypted data to the server. The server decrypts the premaster secret using its private key. The client and server generate identical session keys to use symmetric encryption by using the client random, the server random, and the premaster secret.
+
+#### How to Generate the Public Certificate, Private Key, and Certificate Authority
+1. Go to the terminal
+2. `CANAME=CompanionCubeCA`
+2. `openssl genrsa -aes256 -out $CANAME.key 2048`
+3. `openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 1826 -out $CANAME.crt`
+4. Add the CA certificate to the trusted root certificates of your computer ([instructions for mac](https://support.apple.com/en-ca/guide/keychain-access/kyca2431/mac) and [instructions to trust the certificate](https://support.apple.com/en-ca/guide/keychain-access/kyca11871/mac))
+5. `MYCERT=cube`
+6. `openssl req -new -nodes -out $MYCERT.csr -newkey rsa:2048 -keyout $MYCERT.key`
+7. `vi config.ext`
+8. Enter the following information and save it after by pressing escape then :w and then escape and :q to leave.
+```
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = companion-cube.local
+IP.1 = 192.168.4.22
+```
+9. `openssl x509 -req -in $MYCERT.csr -CA $CANAME.crt -CAkey $CANAME.key -CAcreateserial -out $MYCERT.crt -days 1826 -sha256 -extfile config.ext`
+10. Your public certificate is now in `cube.crt` and your private key is in `cube.key`.
+
+### Step 4: The ESP8266 Code in the Arduino IDE. 
+Please read the comments in the code to understand where changes are required and how the code works for the ESP8266. You can update the certificate and private key used to set up a TLS connection with the values from step 3.
 In summary, the ESP8266 connects to WiFi, then checks every 5 minutes if a change has been made to the colour number in the google sheet by using a get request. If the button or switch goes on and off, the colour increments by 1, and a POST request is sent to update the google sheet. 
 When the button or switch is pressed (LOW), the light flashes green to indicate that the press has been detected. The user can then put the switch back in the normal position or stop pressing the button. A colour change should occur. 
 **_NOTE:_** Colour 10 is a power-saving mode where the get request time is increased to 10 minutes and the light is off. 
 
 [See esp8266 file](./esp8266Script/wifi_requests.ino)
 
-Compile the code (make sure to go to Tools > Board > Select the Generic ESP8266 Module and also select the correct port in Tools). 
-<br>
-**_IMPORTANT:_**
-If you don't have a mac and are not detecting the port for the esp8266 board, the issue might be that you don't have the necessary driver. To fix this on a windows computer, I went to Device Manager> other devices. <br>
-Select the device with the missing driver > right-click properties > driver > update driver and select the downloaded one. <br> I had downloaded this [driver](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers?tab=downloads). Do your own research on this to see if this solution is correct for you and if you want to download the driver.  
+Compile the code (make sure to go to Tools > Board > Select the Generic ESP8266 Module and also select the correct port in Tools). Upload the code to the board. Your serial monitor should be set to 115200 baud. 
+<br>  
 
-Upload the code to the board. Your serial monitor should be set to 9600 baud. The initial colour is pink in my code.  
+### Step 5: Connecting to WiFi 
+After the code is uploaded:
+1. Go to the list of WiFi networks on your device and connect to the Companion Cube access point (the password is `apple_pine_windOw2`). This access point will stay open a maximum of 10 minutes.
+2. Search for `https://companion-cube.local`.
+3. Enter the name of your WiFi network and its password on the screen that appears.
+![plot](./static/screen.png)
+<br>
+If you successfully connect to WiFi, the cube will turn green. It turns red if you fail to connect once. If you fail to connect 2 times, then the cube turns pink and you need to unplug and plug it in again to retry. 
+
+#### How is the .local domain working? 
+The code is using something called MDNS to allow the domain name to be discoverable locally. 
+If this was not used, the screen could only be accessed using the server's ip address.
+When you are searching for a webpage on the internet, the browser sends the domain name to the router which can access the DNS servers. The DNS server returns the ip of the webpage you are trying to reach. You now know where the webpage is located.
+<br>
+Your local network does not have a DNS server, but you can use multicast DNS instead (uses .local suffix). If you are trying to access a domain name ending in .local, your computer will send a multicast query in the local area network. All devices on that network that support mDNS will receive the query. If the device identifies the domain name as its own, it will send another multicast query containing its IP address.
 <br> <br> 
 ![plot](./static/companion-cube-screenshot.jpg)
 <br> <br>
